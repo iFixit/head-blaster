@@ -43,11 +43,12 @@ function processLine(line, done) {
 
 function fixObjectCacheHeaders(bucket, key, callback) {
    modifyHeaders(bucket, key, fixCacheHeaders,
-   function(err, response) {
+   function(err, response, original, fixed) {
       if (err) {
          console.log("FAILURE:%s:%s", bucket,key);
       } else {
-         console.log("SUCCESS:%s:%s", bucket,key);
+         console.log("SUCCESS:%s:%s before:%s", bucket, key, JSON.stringify(original));
+         console.log("               after:%s", JSON.stringify(fixed));
       }
       callback();
    });

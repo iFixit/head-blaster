@@ -8,22 +8,23 @@ module.exports = function(bucket, key, headerTransformer, callback) {
          return callback(err);
       }
 
-      var newHeaders = headerTransformer(headers);
-      newHeaders = removeDisallowedHeaders(newHeaders);
+      var newHeaders = _.clone(headers);
+      newHeaders = headerTransformer(newHeaders);
 
       var e = encodeURIComponent;
       var requestParams = {
          Bucket: bucket,
-         Key: key + '.test',
+         Key: key,
          CopySource: e(bucket) + '/' + e(key),
          MetadataDirective: 'REPLACE',
          ACL: 'public-read'
       };
 
-      _.extend(newHeaders, requestParams);
+      requestParams = _.extend({}, newHeaders, requestParams);
+      removeDisallowedHeaders(requestParams);
 
-      s3.copyObject(newHeaders, function(err, response) {
-         callback(err, response);
+      s3.copyObject(requestParams, function(err, response) {
+         callback(err, response, headers, newHeaders);
       });
    });
 };
