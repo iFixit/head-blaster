@@ -2,7 +2,8 @@
 A programmatic way to alter the s3 headers of many keys in many buckets.
 
 Usage:
-   node index.js --file=input --concurrency=3 --operation=./operations/fix-cache-headers.js > output.log
+
+    node index.js --file=input --concurrency=3 --operation=./operations/fix-cache-headers.js > output.log
 
 where input is a file like:
 
