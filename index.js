@@ -6,16 +6,20 @@ var concurrency = argv.concurrency;
 var completed = 0;
 var objectQueue = new Queue();
 
-if (!argv.file) {
-   console.error("--file= argument is required");
+if (!argv.file || !argv.concurrency || !argv.operation) {
+   console.error([
+    "Usage: node index.js --file=input.file --concurrency=2 --operation=./operations/fix-cache-headers.js",
+    "   --file          : input file with one 'bucket:key' per line",
+    "   --concurrency   : number of api calls to make parallel (typically 2-10)",
+    "   --operation     : path to module exporting: ",
+    "                     function(inheaders) {return outheaders;}",
+    "                     see operations/*",
+    ''
+    ].join('\n'));
    process.exit(-1);
 }
 
-if (!concurrency) {
-   console.error("--concurrency= argument is required");
-   process.exit(-1);
-}
-
+var operation = require(argv.operation);
 console.log("Reading file...");
 out("Reading file...");
 var lines = fs.readFileSync(argv.file, 'utf8').split("\n");
@@ -34,15 +38,15 @@ for(var i=0; i<concurrency; i++) {
 
 function processLine(line, done) {
    var object = parseLine(line);
-   fixObjectCacheHeaders(object.bucket, object.key, function() {
+   fixObjectHeaders(object.bucket, object.key, function() {
       completed++;
       printStatus(completed, count);
       done();
    });
 }
 
-function fixObjectCacheHeaders(bucket, key, callback) {
-   modifyHeaders(bucket, key, fixCacheHeaders,
+function fixObjectHeaders(bucket, key, callback) {
+   modifyHeaders(bucket, key, operation,
    function(err, response, original, fixed) {
       if (err) {
          console.log("FAILURE:%s:%s", bucket,key);
@@ -52,12 +56,6 @@ function fixObjectCacheHeaders(bucket, key, callback) {
       }
       callback();
    });
-}
-
-function fixCacheHeaders(headers) {
-   delete headers.Expires;
-   headers.CacheControl = 'max-age=31557600';
-   return headers;
 }
 
 function printStatus(current, count) {
