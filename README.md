@@ -1,4 +1,4 @@
-## fix-s3-headers
+## head-blaster
 A programmatic way to alter the s3 headers of many keys in many buckets.
 
 Usage:
