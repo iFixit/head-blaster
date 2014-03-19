@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-     "aws-sdk": "2.0.x"
+     "aws-sdk": "2.0.x",
+     "underscore": "1.6.x",
+     "notify-queue": "0.x",
+     "yargs": "^1.2.1"
   },
   "author": "Daniel Beardsley <daniel.beardsley@gmail.com>",
   "license": "MIT"

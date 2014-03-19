@@ -1,43 +1,71 @@
-var AWS = require('aws-sdk');
-var _ = require('underscore');
+var modifyHeaders = require('./modify-headers.js');
 var Queue = require('notify-queue');
+var argv = require('yargs').argv;
+var fs = require('fs');
+var concurrency = argv.concurrency;
+var completed = 0;
 
-var s3 = new AWS.S3({apiVersion: '2006-03-01'});
+if (!argv.file) {
+   console.error("--file= argument is required");
+   process.exit(-1);
+}
 
-var b = 'some-bucket';
-var k = 'some-key';
+if (!concurrency) {
+   console.error("--concurrency= argument is required");
+   process.exit(-1);
+}
 
-s3.headObject({Bucket: b, Key: k}, function(err, headers) {
-   if (err) {
-      console.log(err, err.stack);
-   }
+var contents = fs.readFileSync(argv.file, 'utf8');
+lines = contents.split("\n");
+var count = lines.length;
 
-   var newHeaders = fixHeaders(headers);
-   var requestParams = {
-      Bucket: b,
-      Key: k + ".test",
-      CopySource: b + '/' + k,
-      MetadataDirective: 'REPLACE',
-      ACL: 'public-read'
-   }
+var objectQueue = new Queue();
 
-   _.extend(newHeaders, requestParams);
-
-   s3.copyObject(newHeaders, function(err, response) {
-      if (err) {
-         console.log(err, err.stack);
-      } else {
-         console.dir(response);
-      }
-   });
+lines.forEach(function(line) {
+   objectQueue.push(line);
 });
 
-function fixHeaders(headers) {
+for(var i=0; i<concurrency; i++) {
+   objectQueue.pop(processLine);
+}
+
+function processLine(line, done) {
+   var object = parseLine(line);
+   fixObjectCacheHeaders(object.bucket, object.key, function() {
+      completed++;
+      printStatus(completed, count);
+      done();
+   });
+}
+
+function fixObjectCacheHeaders(bucket, key, callback) {
+   modifyHeaders(bucket, key, fixCacheHeaders,
+   function(err, response) {
+      if (err) {
+         console.log("FAILURE:%s:%s", bucket,key);
+      } else {
+         console.log("SUCCESS:%s:%s", bucket,key);
+      }
+      callback();
+   });
+}
+
+function fixCacheHeaders(headers) {
    delete headers.Expires;
-   delete headers['AcceptRanges'];
-   delete headers['ContentLength'];
-   delete headers['ETag'];
-   delete headers['LastModified'];
    headers.CacheControl = 'max-age=31557600';
    return headers;
+}
+
+function printStatus(i, count) {
+   process.stdout.write("\rProgress: " + i);
+}
+
+function parseLine(line) {
+   var sep = line.indexOf(':');
+   var bucket = line.substring(0,sep);
+   var key = line.substring(sep+1);
+   return {
+      bucket: bucket,
+      key: key
+   };
 }
