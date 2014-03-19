@@ -4,6 +4,7 @@ var argv = require('yargs').argv;
 var fs = require('fs');
 var concurrency = argv.concurrency;
 var completed = 0;
+var objectQueue = new Queue();
 
 if (!argv.file) {
    console.error("--file= argument is required");
@@ -15,15 +16,17 @@ if (!concurrency) {
    process.exit(-1);
 }
 
-var contents = fs.readFileSync(argv.file, 'utf8');
-lines = contents.split("\n");
+console.log("Reading file...");
+out("Reading file...");
+var lines = fs.readFileSync(argv.file, 'utf8').split("\n");
 var count = lines.length;
-
-var objectQueue = new Queue();
 
 lines.forEach(function(line) {
    objectQueue.push(line);
 });
+
+out(" Done.\n");
+out("Read " + count + " lines.\n");
 
 for(var i=0; i<concurrency; i++) {
    objectQueue.pop(processLine);
@@ -56,8 +59,10 @@ function fixCacheHeaders(headers) {
    return headers;
 }
 
-function printStatus(i, count) {
-   process.stdout.write("\rProgress: " + i);
+function printStatus(current, count) {
+   var ratio = current / count;
+   var pct = Math.round(1000*ratio) / 1000 + "%";
+   out("\rProgress: " + pct + " (" + current + ' / ' + count + ")");
 }
 
 function parseLine(line) {
@@ -68,4 +73,8 @@ function parseLine(line) {
       bucket: bucket,
       key: key
    };
+}
+
+function out(str) {
+   process.stderr.write(str);
 }
