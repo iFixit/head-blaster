@@ -4,6 +4,7 @@ var argv = require('yargs').argv;
 var fs = require('fs');
 var concurrency = argv.concurrency;
 var completed = 0;
+var errors = 0;
 var objectQueue = new Queue();
 
 if (!argv.file || !argv.concurrency || !argv.operation) {
@@ -38,8 +39,9 @@ for(var i=0; i<concurrency; i++) {
 
 function processLine(line, done) {
    var object = parseLine(line);
-   fixObjectHeaders(object.bucket, object.key, function() {
+   fixObjectHeaders(object.bucket, object.key, function(err) {
       completed++;
+      if (err) errors++;
       printStatus(completed, count);
       done();
    });
@@ -54,14 +56,14 @@ function fixObjectHeaders(bucket, key, callback) {
          console.log("SUCCESS:%s:%s before:%s", bucket, key, JSON.stringify(original));
          console.log("               after:%s", JSON.stringify(fixed));
       }
-      callback();
+      callback(err);
    });
 }
 
 function printStatus(current, count) {
    var ratio = current / count;
    var pct = Math.round(1000*ratio) / 1000 + "%";
-   out("\rProgress: " + pct + " (" + current + ' / ' + count + ")");
+   out("\rProgress: " + pct + " (" + current + ' / ' + count + ") Errors: " + errors);
 }
 
 function parseLine(line) {
