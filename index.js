@@ -9,9 +9,9 @@ var objectQueue = new Queue();
 
 if (!argv.file || !argv.concurrency || !argv.operation) {
    console.error([
-    "Usage: node index.js --file=input.file --concurrency=2 --operation=./operations/fix-cache-headers.js",
+    "Usage: node index.js --file=input.file --concurrency=2 --operation=./operations/fix-cache-headers.js > output.log",
     "   --file          : input file with one 'bucket:key' per line",
-    "   --concurrency   : number of api calls to make parallel (typically 2-10)",
+    "   --concurrency   : number of api calls to make in parallel (typically 2-10)",
     "   --operation     : path to module exporting: ",
     "                     function(inheaders) {return outheaders;}",
     "                     see operations/*",
