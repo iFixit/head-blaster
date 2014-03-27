@@ -21,7 +21,6 @@ if (!argv.file || !argv.concurrency || !argv.operation) {
 }
 
 var operation = require(argv.operation);
-console.log("Reading file...");
 out("Reading file...");
 var lines = fs.readFileSync(argv.file, 'utf8').split("\n");
 var count = lines.length;
@@ -61,7 +60,7 @@ function fixObjectHeaders(bucket, key, callback) {
 }
 
 function printStatus(current, count) {
-   var ratio = current / count;
+   var ratio = current / count * 100;
    var pct = Math.round(1000*ratio) / 1000 + "%";
    out("\rProgress: " + pct + " (" + current + ' / ' + count + ") Errors: " + errors);
 }
