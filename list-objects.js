@@ -19,7 +19,7 @@ if (!argv.buckets) {
 var buckets = argv.buckets.split(",")
 buckets.forEach(function(bucketName) {
    s3.listObjects({Bucket:bucketName}).eachPage(
-   function(err, data, done) {
+   function(err, data) {
       if (err) {
          console.error(err);
          process.exit(1);
@@ -29,7 +29,6 @@ buckets.forEach(function(bucketName) {
             process.stdout.write(bucketName + ":" + object.Key + "\n");
          });
          completed += data.Contents.length;
-         if (done) stream.end();
          log("\rListed " + completed + " objects.");
       }, 0);
    });
