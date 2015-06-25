@@ -1,6 +1,6 @@
 {
-  "name": "fix-s3-headers-js",
-  "version": "0.0.0",
+  "name": "head-blaster",
+  "version": "0.0.2",
   "description": "",
   "main": "head-blaster.js",
   "scripts": {
