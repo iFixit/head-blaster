@@ -2,7 +2,7 @@ var AWS = require('aws-sdk');
 var _ = require('underscore');
 var s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
-module.exports = function(headerTransformer) {
+module.exports = function modifyHeadersFactory(headerTransformer) {
    return function fixObjectHeaders(bucket, key, callback) {
       modifyHeaders(bucket, key, headerTransformer,
       function(err, response, original, fixed) {
