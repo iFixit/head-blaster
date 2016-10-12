@@ -1,6 +1,6 @@
-var setAcl = require('../set-acl.js');
+var setAclFactory = require('../set-acl.js');
 
-module.exports = setAcl(function getAcl(bucket, key) {
+module.exports = setAclFactory(function getAcl(bucket, key) {
    return {ACL: 'private'};
 });
 
