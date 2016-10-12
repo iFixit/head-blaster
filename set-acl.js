@@ -21,6 +21,6 @@ function putObjectAcl(bucket, key, acl, callback) {
    acl.Bucket = bucket;
    acl.Key = key;
    s3.putObjectAcl(acl, function(err) {
-      return callback(err);
+      callback(err);
    });
 }
