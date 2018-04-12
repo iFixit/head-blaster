@@ -1,5 +1,9 @@
 var AWS = require('aws-sdk');
-var s3 = new AWS.S3({apiVersion: '2006-03-01'});
+var s3 = new AWS.S3({
+   apiVersion: '2006-03-01',
+   signatureVersion: 'v4',
+   region: 'us-east-1',
+});
 var argv = require('yargs').argv;
 var completed = 0;
 
@@ -19,16 +23,21 @@ if (!argv.buckets && !argv["all-buckets"]) {
 
 forEachBucket(function(bucketName, next) {
    log("\rListing from bucket: " + bucketName + "\n");
+   var total = 0;
    s3.listObjects({Bucket:bucketName}).eachPage(
    function(err, data) {
       if (err) {
-         console.error(err);
-         process.exit(1);
+         console.dir(err);
+         return;
       }
-      if (!data) return next();
       setTimeout(function() {
+         if (!data) {
+            process.stdout.write("TOTAL BYTES:" + bucketName + ":" + total + "\n");
+            return next();
+         }
          data.Contents.forEach(function(object) {
-            process.stdout.write(bucketName + ":" + object.Key + "\n");
+            total += object.Size;
+            process.stdout.write(bucketName + ":" + object.Size + ":" + object.Key + "\n");
          });
          completed += data.Contents.length;
          log("\rListed " + completed + " objects.");
