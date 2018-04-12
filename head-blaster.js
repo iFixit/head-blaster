@@ -1,4 +1,3 @@
-var modifyHeaders = require('./modify-headers.js');
 var Queue = require('notify-queue');
 var argv = require('yargs').argv;
 var fs = require('fs');
@@ -13,7 +12,7 @@ if (!argv.file || !argv.concurrency || !argv.operation) {
     "   --file          : input file with one 'bucket:key' per line",
     "   --concurrency   : number of api calls to make in parallel (typically 2-10)",
     "   --operation     : path to module exporting: ",
-    "                     function(inheaders) {return outheaders;}",
+    "                     function(bucket, key, callback) {/* do stuff */ callback(err)}",
     "                     see operations/*",
     ''
     ].join('\n'));
@@ -38,24 +37,11 @@ for(var i=0; i<concurrency; i++) {
 
 function processLine(line, done) {
    var object = parseLine(line);
-   fixObjectHeaders(object.bucket, object.key, function(err) {
+   operation(object.bucket, object.key, function(err) {
       completed++;
       if (err) errors++;
       printStatus(completed, count);
       done();
-   });
-}
-
-function fixObjectHeaders(bucket, key, callback) {
-   modifyHeaders(bucket, key, operation,
-   function(err, response, original, fixed) {
-      if (err) {
-         console.log("FAILURE:%s:%s", bucket,key);
-      } else {
-         console.log("SUCCESS:%s:%s before:%s", bucket, key, JSON.stringify(original));
-         console.log("               after:%s", JSON.stringify(fixed));
-      }
-      callback(err);
    });
 }
 
