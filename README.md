@@ -1,5 +1,5 @@
 ## head-blaster
-A programmatic way to alter the s3 headers of many keys in many buckets.
+A programmatic way to alter *many* s3 objects in many buckets in parallel
 
 Usage:
 
